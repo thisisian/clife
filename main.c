@@ -1,16 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct cell {
+struct map {
     int width;
     int height;
+    struct cell cell_array[];
+};
+
+struct cell {
     int data;
     int n_steps; /* number of times cell has been turned on */
-    struct map parent_map;
-} map[];
+};
 
 /* Returns a map will all values zeroed */
-map *initmap(int w, int h)
+struct map initmap(int w, int h)
 {
     int i;
 
@@ -89,6 +92,7 @@ cell *find_neighbor(cell n, int i, int w, int h)
 
 void evaluate(cell *c)
 {
+
 }
 
 /* Takes 2d coordinates and dimentions and outputs appropriate array index */
