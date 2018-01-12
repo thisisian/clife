@@ -163,8 +163,8 @@ struct map step_map(struct map in)
 {
     int i;
     struct map out;
-    for (i = 0; i < input.width * input.height; ++i) {
-        struct cell cell_in = intput.cell_array[i]
+    for (i = 0; i < in.width * in.height; ++i) {
+        struct cell cell_in = in.cell_array[i];
         if (out.cell_array[i] = evaluate(cell_in))
             struct cell cell_out;
     }
