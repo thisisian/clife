@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "header.h"
 struct map {
     int width;
     int height;
@@ -12,15 +13,6 @@ struct cell {
     int n_steps; /* number of times cell has been turned on */
 };
 
-struct map initmap(FILE *input, int w, int h);
-void printmap(struct map input);
-void cell_on(struct map *m, int i);
-void cell_off(struct map *m, int i);
-void cell_toggle(struct map *m, int i);
-int sum_neighbors(struct map *m, int n);
-void evaluate(struct map *m, int i);
-int coord_to_array(int x, int y, int w, int h);
-int find_neighbor(int n, int i, int w, int h);
 
 /*
  * Returns a map loaded from input. 
@@ -80,15 +72,15 @@ void cell_toggle(struct map *m, int i)
 }
 
 /* Takes map structure and array index, gives the sum of all Moore neighbors */
-int sum_neighbors(struct map *m, int n)
+int sum_neighbors(struct map m, int n)
 {
     int i;
     int temp;
     int sum = 0;
 
     for (i = 1; i <= 8; ++i) {
-        temp = find_neighbor(n, i, m->width, m->height);
-        sum += m->cell_array[temp].data;
+        temp = find_neighbor(n, i, m.width, m.height);
+        sum += m.cell_array[temp].data;
     }
     return sum;
 }
@@ -141,16 +133,19 @@ int find_neighbor(int n, int i, int w, int h)
     }
 }
 
-void evaluate(struct map *m, int i)
+/* Evaluates a cell and returns a value (for next step) */
+int evaluate(struct map m, int i)
 {
-    struct cell *c = &m->cell_array[i];
+    struct cell c = m.cell_array[i];
     int sum = sum_neighbors(m, i);
-    if (c->data == 1) {
-        if (sum < 2 || sum > 3)
-            c->data = 0;
+    if (c.data == 1 && (sum < 2 || sum > 3)) {
+        return 0;
+    } else if (sum == 3) {
+        return 1;
+    } else {
+        fprintf(stderr, "evaluate: failed to find valid evaluation");
+        exit(1);
     }
-    else if (sum == 3)
-        c->data = 1;
 }
 
 /* Takes 2d coordinates and dimentions and outputs appropriate array index */
@@ -161,6 +156,19 @@ int coord_to_array(int x, int y, int w, int h)
         exit(1);
     }
     return x + y * w;
+}
+
+/* Returns a map one step forward from input map */
+struct map step_map(struct map in)
+{
+    int i;
+    struct map out;
+    for (i = 0; i < input.width * input.height; ++i) {
+        struct cell cell_in = intput.cell_array[i]
+        if (out.cell_array[i] = evaluate(cell_in))
+            struct cell cell_out;
+    }
+    return out;
 }
 
 int main(void)
