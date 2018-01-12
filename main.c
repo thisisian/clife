@@ -138,12 +138,12 @@ int evaluate(struct map m, int i)
 {
     struct cell c = m.cell_array[i];
     int sum = sum_neighbors(m, i);
-    if (c.data == 1 && (sum < 2 || sum > 3)) {
+    if ((c.data == 1) && (sum < 2 || sum > 3)) {
         return 0;
     } else if (sum == 3) {
         return 1;
     } else {
-        fprintf(stderr, "evaluate: failed to find valid evaluation");
+        fprintf(stderr, "evaluate: failed to find valid evaluation\n");
         exit(1);
     }
 }
@@ -159,19 +159,29 @@ int coord_to_array(int x, int y, int w, int h)
 }
 
 /* Returns a map one step forward from input map */
-struct map step_map(struct map in)
+struct map step_map(struct map map_in)
 {
     int i;
-    struct map out;
-    for (i = 0; i < in.width * in.height; ++i) {
-        struct cell cell_in = in.cell_array[i];
-        if (out.cell_array[i] = evaluate(cell_in))
-            struct cell cell_out;
+    int data_in;
+    
+    struct map map_out;
+    for (i = 0; i < map_in.width * map_in.height; ++i) {
+        data_in = evaluate(map_in, i);
+        map_out.cell_array[i].data = data_in;
     }
-    return out;
+    return map_out;
 }
 
 int main(void)
 {
+    FILE *file = fopen("./examplemap", "r");
+    struct map main_map = initmap(file, 14, 11);
+    struct map temp;
+
+    for (;;) {
+        temp = step_map(main_map);
+        main_map = temp;
+        getc(stdin);
+    }
     return 0;
 }
