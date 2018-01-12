@@ -1,0 +1,10 @@
+These are notes for the FSA project.
+
+New features:
+Add support for standard FSA filetypes.
+Add output to more standard filetype.
+
+Bugs:
+Crashes with error "evaluate: fail to find valid evaluation"
+    sum_neighbors gives incorrect value
+Map prints upside down (maybe is loaded upside down)
