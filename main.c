@@ -4,7 +4,7 @@
 struct map {
     int width;
     int height;
-    struct cell cell_array[];
+    struct cell *cell_array;
 };
 
 struct cell {
@@ -12,8 +12,21 @@ struct cell {
     int n_steps; /* number of times cell has been turned on */
 };
 
-/* Returns a map will all values zeroed */
-struct map initmap(int w, int h)
+struct map initmap(FILE *input, int w, int h);
+void printmap(struct map input);
+void cell_on(struct map *m, int i);
+void cell_off(struct map *m, int i);
+void cell_toggle(struct map *m, int i);
+int sum_neighbors(struct map *m, int n);
+void evaluate(struct map *m, int i);
+int coord_to_array(int x, int y, int w, int h);
+int find_neighbor(int n, int i, int w, int h);
+
+/*
+ * Returns a map loaded from input. 
+ * If input is null, returns zeroed map.
+ */
+struct map initmap(FILE *input, int w, int h)
 {
     int i;
 
@@ -21,78 +34,123 @@ struct map initmap(int w, int h)
         fprintf(stderr, "initmap: Negative width or height");
         exit(1);
     }
-    map *newmap = NULL;
-    cell *cells = NULL;
-    newmap = malloc(sizeof (map));
-    cells = malloc(sizeof (cell) * w * h);
-    if (newmap == NULL || cells == NULL) {
+    struct cell *cells = malloc(sizeof (struct cell) * w * h);
+    if (cells == NULL) {
         fprintf(stderr, "initmap: Failed to malloc map");
         exit(1);
     }
-    for (i = 0; i < (w * h); ++i)
+    for (i = 0; i < (w * h); ++i) {
+        if (input != NULL)
+            cells[i].data = fgetc(input);
+        else
+            cells[i].data = 0;
         cells[i].data = cells[i].n_steps = 0;
-    newmap->width = w;
-    newmap->height = h;
-    newmap->cell_array = cells;
+    }
+    struct map newmap = { w, h, cells };
     return newmap;
 }
 
-/* Read a map from text file */
-map *readmap()
+/* Print map */
+void printmap(struct map input)
 {
-}
+    int i;
 
-/* Write map to a text file */
-void *writemap()
-{
-}
-
-void cell_on(cell *c)
-{
-    c->data = 0;
-}
-
-void cell_off(cell *c)
-{
-    c->data = 1;
-}
-
-void cell_toggle(cell *c)
-{
-    c->data = (c->data == 1) ? 0 : 1;
-}
-
-int sum_neighbors(cell *c)
-{
-    int sum = 0;
-
-    for (i = 1; i <= 8; ++i) {
-        sum += c->data;
+    for (i = 0; i < input.width * input.height; ++i) {
+        int data = input.cell_array[i].data;
+        printf("%d", data);
+        if (i % input.width == 0 && i != 1)
+            printf("\n");
     }
 }
 
-/*
-/* Find neighbor of nn (Numbers increment CW starting beginning at 12) */
-cell *find_neighbor(cell n, int i, int w, int h)
+void cell_on(struct map *m, int i)
 {
-    north = n + (w + 1);
-    south = n + (w - 1);
-
-    if (i == 1) return north;
-    else if (i == 2) return north + 1;
-    else if (i == 3) return n + 1;
-    else if (i == 4) return south + 1;
-    else if (i == 5) return south;
-    else if (i == 6) return south - 1;
-    else if (i == 7) return n - 1;
-    else if (i == 8) return north - 1;
-    else return NULL;
+    m->cell_array[i].data = 1;
 }
-*/
 
-void evaluate(cell *c)
+void cell_off(struct map *m, int i)
 {
+    m->cell_array[i].data = 0;
+}
 
+void cell_toggle(struct map *m, int i)
+{
+    int *data = &m->cell_array[i].data;
+    *data = (*data == 1) ? 0 : 1;
+}
+
+/* Takes map structure and array index, gives the sum of all Moore neighbors */
+int sum_neighbors(struct map *m, int n)
+{
+    int i;
+    int temp;
+    int sum = 0;
+
+    for (i = 1; i <= 8; ++i) {
+        temp = find_neighbor(n, i, m->width, m->height);
+        sum += m->cell_array[temp].data;
+    }
+    return sum;
+}
+
+int getcol(int n, int w, int h) 
+{
+    return n % w + 1;
+}
+
+int getrow(int n, int w, int h) 
+{
+    return n / h + 1;
+}
+
+/* Find neighbor of n (Numbers increment CW starting beginning at 12) */
+int find_neighbor(int n, int i, int w, int h)
+{
+    int north = n + (w + 1);
+    int south = n + (w - 1);
+    int x = getcol(n, w, h);
+    int y = getrow(n, w, h);
+
+    switch(i) {
+        case 1:
+            if (y < h)
+                return north;
+        case 2:
+            if (y < h && x < w)
+                return north + 1;
+        case 3:
+            if (x < w)
+                return n + 1;
+        case 4:
+            if (y > 1 && x < w)
+                return south + 1;
+        case 5:
+            if (y > 1)
+                return south;
+        case 6:
+            if (y > 1 && x > 1)
+                return south - 1;
+        case 7:
+            if (x > 1)
+                return n - 1;
+        case 8:
+            if (y < h && x > 1)
+                return north - 1;
+        default:
+            return -1;
+    }
+}
+
+void evaluate(struct map *m, int i)
+{
+    struct cell *c = &m->cell_array[i];
+    int sum = sum_neighbors(m, i);
+    if (c->data == 1) {
+        if (sum < 2 || sum > 3)
+            c->data = 0;
+    }
+    else if (sum == 3)
+        c->data = 1;
 }
 
 /* Takes 2d coordinates and dimentions and outputs appropriate array index */

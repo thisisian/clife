@@ -2,25 +2,23 @@
 #include <string.h>
 
 struct out {
-    struct in inside;
-    char message[];
-}
+    char *message;
+    struct in {
+        char *message;
+    } innerstruct;
+};
 
-struct in {
-    char message[];
-}
 
 struct out createstruct(void)
 {
-    struct out structure;
-    strcpy(structure.message, "Hello one");
-    strcpy(structure.message.in.message, "Hello two");
+    struct out structure = {"Hello, world!"};
+    struct in innerstruct = {"Hello, moon!"};
+    structure.innerstruct = innerstruct;
     return structure;
 }
 
 void main(void)
 {
-    struct out structure = createstruct(void)
-        printf("%s\n", structure.message);
-        printf("%s\n", structure.message.in.message);
+    int *i = &2;
+    printf("%d\n", *i);
 }
