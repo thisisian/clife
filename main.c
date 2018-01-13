@@ -21,6 +21,7 @@ struct cell {
 struct map initmap(FILE *input, int w, int h)
 {
     int i;
+    char c;
 
     if (w < 1 || h < 1) {
         fprintf(stderr, "initmap: Negative width or height");
@@ -32,11 +33,14 @@ struct map initmap(FILE *input, int w, int h)
         exit(1);
     }
     for (i = 0; i < (w * h); ++i) {
-        if (input != NULL)
-            cells[i].data = fgetc(input);
+        if (input != NULL) {
+            while ((c = fgetc(input)) == '\n')
+                    ;
+            cells[i].data = c - '0';
+        }
         else
             cells[i].data = 0;
-        cells[i].data = cells[i].n_steps = 0;
+        cells[i].n_steps = 0;
     }
     struct map newmap = { w, h, cells };
     return newmap;
@@ -46,11 +50,12 @@ struct map initmap(FILE *input, int w, int h)
 void printmap(struct map input)
 {
     int i;
+    int w = input.width;
 
     for (i = 0; i < input.width * input.height; ++i) {
         int data = input.cell_array[i].data;
         printf("%d", data);
-        if (i % input.width == 0 && i != 1)
+        if ((i + 1) % w == 0 && i != 1)
             printf("\n");
     }
 }
@@ -98,36 +103,44 @@ int getrow(int n, int w, int h)
 /* Find neighbor of n (Numbers increment CW starting beginning at 12) */
 int find_neighbor(int n, int i, int w, int h)
 {
-    int north = n + (w + 1);
-    int south = n + (w - 1);
-    int x = getcol(n, w, h);
-    int y = getrow(n, w, h);
+    int north = n + w;
+    int south = n - w;
+    int xpos = getcol(n, w, h);
+    int ypos = getrow(n, w, h);
 
     switch(i) {
         case 1:
-            if (y < h)
+            if (ypos < h)
                 return north;
+            return 0;
         case 2:
-            if (y < h && x < w)
+            if (ypos < h && xpos < w)
                 return north + 1;
+            return 0;
         case 3:
-            if (x < w)
+            if (xpos < w)
                 return n + 1;
+            return 0;
         case 4:
-            if (y > 1 && x < w)
-                return south + 1;
-        case 5:
-            if (y > 1)
-                return south;
+            if (ypos > 1 && xpos < w)
+                return south + 1; 
+            return 0;
+        case 5: 
+            if (ypos > 1) 
+                return south; 
+            return 0;
         case 6:
-            if (y > 1 && x > 1)
+            if (ypos > 1 && xpos > 1)
                 return south - 1;
+                return 0;
         case 7:
-            if (x > 1)
+            if (xpos > 1)
                 return n - 1;
+            return 0;
         case 8:
-            if (y < h && x > 1)
+            if (ypos < h && xpos > 1)
                 return north - 1;
+            return 0;
         default:
             return -1;
     }
@@ -138,13 +151,13 @@ int evaluate(struct map m, int i)
 {
     struct cell c = m.cell_array[i];
     int sum = sum_neighbors(m, i);
+
     if ((c.data == 1) && (sum < 2 || sum > 3)) {
         return 0;
     } else if (sum == 3) {
-        return 1;
+        return 1; 
     } else {
-        fprintf(stderr, "evaluate: failed to find valid evaluation\n");
-        exit(1);
+        return 0;
     }
 }
 
@@ -178,6 +191,7 @@ int main(void)
     struct map main_map = initmap(file, 14, 11);
     struct map temp;
 
+    printmap(main_map);
     for (;;) {
         temp = step_map(main_map);
         main_map = temp;

@@ -1,10 +1,13 @@
-These are notes for the FSA project.
+These are notes for the CA project.
 
 New features:
-Add support for standard FSA filetypes.
+Add support for standard CA filetypes.
 Add output to more standard filetype.
+Add command line options
+
+Improvements:
+Error macro
 
 Bugs:
-Crashes with error "evaluate: fail to find valid evaluation"
-    sum_neighbors gives incorrect value
-Map prints upside down (maybe is loaded upside down)
+segfaults
+    work out a memory allocation method for cells (needs two allocated spaces)
