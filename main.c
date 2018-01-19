@@ -1,35 +1,49 @@
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "header.h"
-struct map {
-    int width;
-    int height;
-    struct cell *cell_array;
-};
 
-struct cell {
-    int data;
-    int n_steps; /* number of times cell has been turned on */
-};
+int main(void)
+{
+    char s[MAXSTR];
+    FILE *map = fopen("./examplemap", "r");
+    struct map *main_map_ptr = NULL;
+    struct map *temp_map_ptr = NULL;
+    initmap(map, 14, 11, &main_map_ptr);
+    initmap(NULL, 14, 11, &temp_map_ptr);
 
+    /* test findneighbor */
+
+
+    for (;;) {
+        printmap(*main_map_ptr);
+        step_map(*main_map_ptr, temp_map_ptr);
+        main_map_ptr = temp_map_ptr;
+        printf("<ENTER> to continue\n");
+        getinput(s, MAXSTR);
+    }
+    return 0;
+}
 
 /*
- * Returns a map loaded from input. 
- * If input is null, returns zeroed map.
+ * Load a map into mpaoutptr. Returns 1 on success. 
  */
-struct map initmap(FILE *input, int w, int h)
+int initmap(FILE *input, int w, int h, struct map **mapoutptr)
 {
     int i;
     char c;
 
+    *mapoutptr = malloc(sizeof (struct map));
+    if (mapoutptr == NULL) {
+        fprintf(stderr, "intimap: Failed to malloc map");
+        exit(1);
+    }
     if (w < 1 || h < 1) {
         fprintf(stderr, "initmap: Negative width or height");
         exit(1);
     }
     struct cell *cells = malloc(sizeof (struct cell) * w * h);
     if (cells == NULL) {
-        fprintf(stderr, "initmap: Failed to malloc map");
+        fprintf(stderr, "initmap: Failed to malloc cells");
         exit(1);
     }
     for (i = 0; i < (w * h); ++i) {
@@ -42,8 +56,10 @@ struct map initmap(FILE *input, int w, int h)
             cells[i].data = 0;
         cells[i].n_steps = 0;
     }
-    struct map newmap = { w, h, cells };
-    return newmap;
+    (*mapoutptr)->width = w;
+    (*mapoutptr)->height = h;
+    (*mapoutptr)->cell_array = cells;
+    return 1;
 }
 
 /* Print map */
@@ -171,31 +187,34 @@ int coord_to_array(int x, int y, int w, int h)
     return x + y * w;
 }
 
-/* Returns a map one step forward from input map */
-struct map step_map(struct map map_in)
+/* Takes 2D array index, writes x and y coords to xptr and yptr */
+void array_to_coords(int i, int *xptr, int *yptr)
+{
+}
+
+/* Saves map_in one step forward into map_out */
+int step_map(struct map map_in, struct map *map_outptr)
 {
     int i;
     int data_in;
-    
-    struct map map_out;
+
     for (i = 0; i < map_in.width * map_in.height; ++i) {
         data_in = evaluate(map_in, i);
-        map_out.cell_array[i].data = data_in;
-    }
-    return map_out;
-}
-
-int main(void)
-{
-    FILE *file = fopen("./examplemap", "r");
-    struct map main_map = initmap(file, 14, 11);
-    struct map temp;
-
-    printmap(main_map);
-    for (;;) {
-        temp = step_map(main_map);
-        main_map = temp;
-        getc(stdin);
+        map_outptr->cell_array[i].data = data_in;
     }
     return 0;
 }
+
+
+/* Gets maximum of lim from input into s, dumps stdin */
+void getinput(char s[], int lim) 
+{
+    fgets(s, lim, stdin);
+    int len = strlen(s);
+    if (len == 0)
+        s[0] = '\0';
+    else if (len > 0 && s[len - 1] == '\n')
+        s[len - 1] = '\0';
+    fflush(stdin);
+}
+
