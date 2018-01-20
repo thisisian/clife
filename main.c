@@ -1,33 +1,23 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "header.h"
+
+struct map *pbuffmap = NULL;
+struct map *pmainmap = NULL;
 
 int main(void)
 {
     int width = 40;
     int height = 20;
 
-
     char s[MAXSTR];
     FILE *mapfile = fopen("./examplemap", "r");
-    struct map *main_map_ptr = NULL;
-    struct map *temp_map_ptr = NULL;
-    initmap(mapfile, width, height, &main_map_ptr);
-    initmap(NULL, width, height, &temp_map_ptr);
-
-    test_coordsys(10, 10, 40, 40);
-    test_coordsys(20, 30, 40, 40);
-    test_coordsys(15, 15, 40, 40);
-    test_coordsys(15, 15, 40, 40);
-        getinput(s, MAXSTR);
+    initmap(mapfile, width, height, *pmainmap);
+    initmap(NULL, width, height, *pbuffmap);
 
     for (;;) {
-        printsums(main_map_ptr);
-        printmap(main_map_ptr);
+        printmap(pmainmap);
         printf("<ENTER> to continue\n");
         getinput(s, MAXSTR);
-        step_map(&main_map_ptr, &temp_map_ptr);
-        
+        step_map(pmainmap);
     }
     return 0;
 }
@@ -86,6 +76,7 @@ void printmap(struct map *mapptr)
     }
 }
 
+
 int getcol(int n, int w, int h) 
 {
     return n % w;
@@ -95,6 +86,61 @@ int getrow(int n, int w, int h)
 {
     return n / h;
 }
+
+/* 
+ * Accepts 2D array index, direction index (CCW starting north), 
+ * array index and height and outputs index of neighbor 
+ *
+ * Returns -1 if result is outside array
+ */
+int find_neighbor(int xpos, int ypos, int i, int w, int h)
+{
+    int north = n + w;
+    int south = n - w;
+    int xpos = getcol(n, w, h);
+    int ypos = getrow(n, w, h);
+    int result = -1;
+
+    switch(i) {
+        case 1:
+            if (ypos < h - 1)
+                result = north;
+            break;
+        case 2:
+            if (ypos < h - 1 && xpos < w - 1)
+                result = north + 1;
+            break;
+        case 3:
+            if (xpos < w - 1)
+                result = n + 1;
+            break;
+        case 4:
+            if (ypos > 0 && xpos < w - 1)
+                result = south + 1; 
+            break;
+        case 5: 
+            if (ypos > 0) 
+                result = south; 
+            break;
+        case 6:
+            if (ypos > 0 && xpos > 0)
+                result = south - 1;
+            break;
+        case 7:
+            if (xpos > 0)
+                result = n - 1;
+            break;
+        case 8:
+            if (ypos < h - 1 && xpos > 0)
+                result = north - 1;
+            break;
+        default:
+            fprintf(stderr, "find_neighbor: case fell through");
+            exit(1);
+    }
+    return result;
+}
+
 
 /* Takes 2d coordinates and dimentions and outputs appropriate array index */
 int coord_to_array(int x, int y, int w, int h)
