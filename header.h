@@ -30,6 +30,6 @@ void test_coordsys(int x, int y,  int width, int height);
 void printsums(struct map * mapptr);
 
 /* evalmap.c */
-int step_map(struct map  **mapinptr, struct map **buffer);
+int step_map(struct map **pmap);
 int evaluate(struct map *mapptr, int i);
 int sum_neighbors(struct map m, int n);
