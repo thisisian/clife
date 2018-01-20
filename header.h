@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #define MAXSTR 1000
 
@@ -14,15 +16,20 @@ struct cell {
 };
 
 /* Function Prototypes */
+/* main.c */
 void getinput(char *s, int lim);
-void printmap(struct map input);
-void cell_on(struct map *m, int i);
-void cell_off(struct map *m, int i);
-void cell_toggle(struct map *m, int i);
-int sum_neighbors(struct map m, int n);
-int evaluate(struct map m, int i);
-int step_map(struct map map_in, struct map *map_outptr);
+void printmap(struct map *mapptr);
 int initmap(FILE *input, int w, int h, struct map **mapoutptr);
 int coord_to_array(int x, int y, int w, int h);
 int find_neighbor(int n, int i, int w, int h);
+int getcol(int n, int w, int h);
+int getrow(int n, int w, int h);
 
+/* debug.c */
+void test_coordsys(int x, int y,  int width, int height);
+void printsums(struct map * mapptr);
+
+/* evalmap.c */
+int step_map(struct map  **mapinptr, struct map **buffer);
+int evaluate(struct map *mapptr, int i);
+int sum_neighbors(struct map m, int n);
