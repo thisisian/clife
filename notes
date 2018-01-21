@@ -1,13 +1,9 @@
-These are notes for the CA project.
-
-New features:
+TODO:
+Fix map loading, add dynamic dimensions
+Fix issue where bottom half of map doesn't behave properly
+    - test smallest size
+Add command line options
+   -loading map
+   -random soup
 Add support for standard CA filetypes.
 Add output to more standard filetype.
-Add command line options
-
-Improvements:
-Error macro
-
-Bugs:
-segfaults
-    work out a memory allocation method for cells (needs two allocated spaces)

@@ -12,7 +12,6 @@ struct map {
 
 struct cell {
     int data;
-    int n_steps; /* number of times cell has been turned on */
 };
 
 /* Function Prototypes */
@@ -28,6 +27,7 @@ int getrow(int n, int w, int h);
 /* debug.c */
 void test_coordsys(int x, int y,  int width, int height);
 void printsums(struct map * mapptr);
+void probecell(struct map * mapptr, int x, int y);
 
 /* evalmap.c */
 int step_map(struct map **pmap);
