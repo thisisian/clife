@@ -61,8 +61,7 @@ int sum_neighbors(struct map mapin, int arrindex)
 
 /* 
  * Accepts 2D array index, direction index (CCW starting north), 
- * array index and height and outputs index of neighbor 
- *
+ * array dimentions and  outputs index of neighbor 
  */
 int find_neighbor(int arrindex, int dir, int w, int h)
 {
@@ -112,7 +111,6 @@ int find_neighbor(int arrindex, int dir, int w, int h)
             break;
         default:
             fprintf(stderr, "find_neighbor: case fell through");
-            exit(1);
     }
     return result;
 }

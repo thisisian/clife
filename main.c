@@ -5,23 +5,16 @@ struct map *pmainmap = NULL;
 
 int main(void)
 {
-    int width = 80;
+    srand(time(NULL));
+    int width = 50;
     int height = 50;
 
     char s[MAXSTR];
-    FILE *mapfile = fopen("./examplemap", "r");
+    FILE *mapfile = fopen("./map", "r");
     initmap(mapfile, width, height, &pmainmap);
     initmap(NULL, pmainmap->width, pmainmap->height, &pbuffmap);
 
-    probecell(pmainmap, 0, 0);
-    probecell(pmainmap, 1, 1);
-    probecell(pmainmap, 78, 48);
-    probecell(pmainmap, 79, 49);
-    probecell(pmainmap, 80, 50);
-    probecell(pmainmap, 81, 51);
-
     for (;;) {
-        //printsums(pmainmap);
         printmap(pmainmap);
         printf("<ENTER> to continue\n");
         getinput(s, MAXSTR);
@@ -63,7 +56,8 @@ int initmap(FILE *input, int w, int h, struct map **mapoutptr)
         } else {
             while ((c = fgetc(input)) == '\n')
                 ;
-            cells[i].data = c - '0';
+            cells[i].data = rand() % 2;
+            //cells[i].data = c - '0';
         } 
     }
 
@@ -89,22 +83,21 @@ for (i = 0; i < mapptr->width * mapptr->height; ++i) {
 }
 
 
-int getcol(int n, int w, int h) 
+int getcol(int arrindex, int w, int h) 
 {
-    return n % w;
+    return arrindex % w;
 }
 
-int getrow(int n, int w, int h) 
+int getrow(int arrindex, int w, int h) 
 {
-    return n / h;
+    return arrindex / w;
 }
 
 /* Takes 2d coordinates and dimentions and outputs appropriate array index */
 int coord_to_array(int x, int y, int w, int h)
 {
     if (x >= w || y >= h) {
-        fprintf(stderr, "coord_to_array: Given coordinate outside range");
-        exit(1);
+        fprintf(stderr, "coord_to_array: Given coordinate outside range\n");
     }
     return x + y * w;
 }

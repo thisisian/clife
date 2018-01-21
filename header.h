@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #define MAXSTR 1000
 
 /* Typedefs */
@@ -25,7 +26,6 @@ int getcol(int n, int w, int h);
 int getrow(int n, int w, int h);
 
 /* debug.c */
-void test_coordsys(int x, int y,  int width, int height);
 void printsums(struct map * mapptr);
 void probecell(struct map * mapptr, int x, int y);
 
