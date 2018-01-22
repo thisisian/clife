@@ -5,12 +5,16 @@ struct map *pmainmap = NULL;
 
 int main(void)
 {
-    srand(time(NULL));
-    int width = 50;
-    int height = 50;
-
     char s[MAXSTR];
-    FILE *mapfile = fopen("./map", "r");
+    int width;
+    int height;
+    FILE *mapfile;
+
+    srand(time(NULL));
+    width = 50;
+    height = 50;
+
+    mapfile = fopen("./map", "r");
     initmap(mapfile, width, height, &pmainmap);
     initmap(NULL, pmainmap->width, pmainmap->height, &pbuffmap);
 
@@ -56,8 +60,8 @@ int initmap(FILE *input, int w, int h, struct map **mapoutptr)
         } else {
             while ((c = fgetc(input)) == '\n')
                 ;
-            cells[i].data = rand() % 2;
-            //cells[i].data = c - '0';
+            /* cells[i].data = rand() % 2; */
+            cells[i].data = c - '0';
         } 
     }
 
@@ -106,8 +110,10 @@ int coord_to_array(int x, int y, int w, int h)
 /* Gets maximum of lim from input into s, dumps stdin */
 void getinput(char s[], int lim) 
 {
+    int len;
+
     fgets(s, lim, stdin);
-    int len = strlen(s);
+     len = strlen(s);
     if (len == 0)
         s[0] = '\0';
     else if (len > 0 && s[len - 1] == '\n')
