@@ -1,21 +1,19 @@
 #include "header.h"
 
+int getmapdims(FILE *mapfile, int *pw, int *ph);
+
 struct map *pbuffmap = NULL;
 struct map *pmainmap = NULL;
 
 int main(void)
 {
     char s[MAXSTR];
-    int width;
-    int height;
     FILE *mapfile;
 
     srand(time(NULL));
-    width = 50;
-    height = 50;
 
     mapfile = fopen("./map", "r");
-    initmap(mapfile, width, height, &pmainmap);
+    initmap(mapfile, 0, 0, &pmainmap);
     initmap(NULL, pmainmap->width, pmainmap->height, &pbuffmap);
 
     for (;;) {
@@ -35,26 +33,31 @@ int main(void)
 int initmap(FILE *input, int w, int h, struct map **mapoutptr)
 {
     int i;
+    int width, height;
     char c;
 
     struct cell *cells = NULL;
+
+    if (input != NULL) { 
+        getmapdims(input, &width, &height);
+        rewind(input);
+    } else {
+        width = w;
+        height = h;
+    }
     
     *mapoutptr = malloc(sizeof (struct map));
     if (mapoutptr == NULL) {
         fprintf(stderr, "intimap: Failed to malloc map");
         exit(1);
     }
-    if (w < 1 || h < 1) {
-        fprintf(stderr, "initmap: Invalid width or height");
-        exit(1);
-    }
-    cells = malloc(sizeof (struct cell) * w * h);
+    cells = malloc(sizeof (struct cell) * width * height);
     if (cells == NULL) {
         fprintf(stderr, "initmap: Failed to malloc cells");
         exit(1);
     }
-
-    for (i = 0; i < (w * h); ++i) {
+    
+    for (i = 0; i < (width * height); ++i) {
         if (input == NULL) {
             cells[i].data = 0;
         } else {
@@ -64,11 +67,31 @@ int initmap(FILE *input, int w, int h, struct map **mapoutptr)
             cells[i].data = c - '0';
         } 
     }
+    printf("%d %d\n", width, height);
 
-    (*mapoutptr)->width = w;
-    (*mapoutptr)->height = h;
+    (*mapoutptr)->width = width;
+    (*mapoutptr)->height = height;
     (*mapoutptr)->cell_array = cells;
     return 1;
+}
+
+/* writes map dimentions into w and h */
+int getmapdims(FILE *input, int *pw, int *ph)
+{
+    int ncols, nrows;
+    char c;
+
+    ncols = nrows = 0;
+    while ((c = fgetc(input)) != EOF) {
+        if (c == '\n')
+            ++nrows;
+        if (nrows == 0)
+            ++ncols;
+    }
+    *pw = ncols;
+    *ph = nrows;
+    printf("w: %d, h: %d\n", *pw, *ph);
+    return 0;
 }
 
 /* Print map */
@@ -105,7 +128,6 @@ int coord_to_array(int x, int y, int w, int h)
     }
     return x + y * w;
 }
-
 
 /* Gets maximum of lim from input into s, dumps stdin */
 void getinput(char s[], int lim) 

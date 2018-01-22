@@ -1,0 +1,11 @@
+TODO:
+Clean code
+Add command line options
+   -loading map
+        -i [width] [height] [[format]] 
+   -random soup
+         -r [density (default 50)] [width] [height]
+
+Load PBM format (https://en.wikipedia.org/wiki/Netpbm_format)
+Add support for standard CA filetypes.
+Add output to more standard filetype.
