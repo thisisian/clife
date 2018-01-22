@@ -1,17 +1,16 @@
 #include "header.h"
+#include <unistd.h>
 
 int getmapdims(FILE *mapfile, int *pw, int *ph);
 
 struct map *pbuffmap = NULL;
 struct map *pmainmap = NULL;
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    char s[MAXSTR];
-    FILE *mapfile;
+    FILE *mapfile = NULL;
 
     srand(time(NULL));
-
     mapfile = fopen("./map", "r");
     initmap(mapfile, 0, 0, &pmainmap);
     initmap(NULL, pmainmap->width, pmainmap->height, &pbuffmap);
@@ -19,7 +18,7 @@ int main(void)
     for (;;) {
         printmap(pmainmap);
         printf("<ENTER> to continue\n");
-        getinput(s, MAXSTR);
+        getinput(NULL, MAXSTR);
         step_map(&pmainmap);
     }
     return 0;
@@ -109,7 +108,6 @@ for (i = 0; i < mapptr->width * mapptr->height; ++i) {
     }
 }
 
-
 int getcol(int arrindex, int w, int h) 
 {
     return arrindex % w;
@@ -135,10 +133,12 @@ void getinput(char s[], int lim)
     int len;
 
     fgets(s, lim, stdin);
-     len = strlen(s);
-    if (len == 0)
-        s[0] = '\0';
-    else if (len > 0 && s[len - 1] == '\n')
-        s[len - 1] = '\0';
+    if (s != NULL) {
+        len = strlen(s);
+        if (len == 0)
+            s[0] = '\0';
+        else if (len > 0 && s[len - 1] == '\n')
+            s[len - 1] = '\0';
+    }
     fflush(stdin);
 }
