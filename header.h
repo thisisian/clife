@@ -25,10 +25,6 @@ int find_neighbor(int n, int i, int w, int h);
 int getcol(int n, int w, int h);
 int getrow(int n, int w, int h);
 
-/* debug.c */
-void printsums(struct map * mapptr);
-void probecell(struct map * mapptr, int x, int y);
-
 /* evalmap.c */
 int step_map(struct map **pmap);
 int evaluate(struct map *mapptr, int i);
