@@ -4,6 +4,9 @@ int getmapdims(FILE *mapfile, int *pw, int *ph);
 
 struct map *pbuffmap = NULL;
 struct map *pmainmap = NULL;
+                    /*   0  1  2  3  4  5  6  7  8   */ 
+char rulearr[2][9] = { { 0, 0, 0, 1, 0, 0, 0, 0, 0, },     /* Birth */
+                       { 0, 0, 1, 1, 0, 0, 0, 0, 0, }, };  /* Surive */
 
 int main(void)
 {
