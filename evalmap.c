@@ -2,6 +2,7 @@
 
 extern struct map *pbuffmap;
 extern struct map *pmainmap;
+extern char rulearr[2][9];
 
 /* Moves mapinputptr to next step of the map */
 int step_map(struct map **pmap) 
@@ -10,7 +11,7 @@ int step_map(struct map **pmap)
 
     struct map *temp;
     for (i = 0; i < (*pmap)->width * (*pmap)->height; ++i) {
-        (pbuffmap)->cell_array[i].data = evaluate(*pmap, i);
+        (pbuffmap)->cell_array[i].data = evaluate(*pmap, i, rulearr);
     }
     temp = *pmap;
     *pmap = pbuffmap;
@@ -20,7 +21,7 @@ int step_map(struct map **pmap)
 }
 
 /* Evaluates a cell and returns a value or -1 if failure */
-int evaluate(struct map *mapptr, int arrindex)
+int evaluate(struct map *mapptr, int arrindex, char rulearr[2][9])
 {
     int data = mapptr->cell_array[arrindex].data;
     int sum = sum_neighbors(*mapptr, arrindex);
@@ -29,15 +30,10 @@ int evaluate(struct map *mapptr, int arrindex)
         fprintf(stderr, "evaluate: arrindex out of bounds\n");
         return -1;
     }
-    if (data == 1 && (sum < 2 || sum > 3)) {
-        return 0;
-    } else if (data == 1 && (sum == 3 || sum == 2)) {
-        return 1; 
-    } else if (data == 0 && sum == 3) {
+    if ((data == 0 && rulearr[0][sum] == 1) || 
+        (data == 1 && rulearr[1][sum] == 1))
         return 1;
-    } else {
-        return 0;
-    }
+    return 0;
 }
 /* Sum neighbors at arrindex, return -1 if failure */
 int sum_neighbors(struct map mapin, int arrindex)

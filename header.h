@@ -27,5 +27,5 @@ int getrow(int n, int w, int h);
 
 /* evalmap.c */
 int step_map(struct map **pmap);
-int evaluate(struct map *mapptr, int i);
+int evaluate(struct map *mapptr, int arrindex, char rulearr[2][9]);
 int sum_neighbors(struct map m, int n);
