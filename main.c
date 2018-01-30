@@ -2,26 +2,65 @@
 #include <unistd.h>
 
 int getmapdims(FILE *mapfile, int *pw, int *ph);
+void printerror(char *s);
 
 struct map *pbuffmap = NULL;
 struct map *pmainmap = NULL;
                     /*   0  1  2  3  4  5  6  7  8   */ 
 char rulearr[2][9] = { { 0, 0, 0, 1, 0, 0, 0, 0, 0, },     /* Birth */
                        { 0, 0, 1, 1, 0, 0, 0, 0, 0, }, };  /* Surive */
+int mflag = 0;
+int sflag = 0;
+int dflag = 0;
+int rflag = 0;
 
 int main(int argc, char *argv[])
 {
+    char c;
     FILE *mapfile = NULL;
+    int mapwidth, mapheight;
+    mapwidth = mapheight = 0;
 
     srand(time(NULL));
-    mapfile = fopen("./map", "r");
-    initmap(mapfile, 0, 0, &pmainmap);
+
+    while ((c = getopt(argc, argv, "m:s::d:r:")) != -1)
+        switch (c) {
+            case 'm':
+                mflag = 1;
+                if ((mapfile = fopen(optarg, "r")) == NULL)
+                    printerror("Failed to open map file\n");
+                break;
+            case 's':         /* soup */
+                printf("Argument 's' with argument %s\n", optarg);
+                sflag = 1;
+                break;
+            case 'd':
+                printf("Argument 'd' with argument %s\n", optarg);
+                sscanf(optarg, "%d:%d", &mapwidth, &mapheight);
+                dflag = 1;
+                break;
+            case 'r':
+                printf("Argument 'r' with argument %s\n", optarg);
+                rflag = 1;
+                break;
+            case '?':
+                printf("Invalid option!\n");
+        }
+                mapfile = fopen("./map", "r");
+
+    //if (mflag == 1 && sflag == 1)
+        //printerror("A random soup cannot be generated when provided a map\n");
+    //if (mflag == 0 && dflag == 0)
+        ////printerror("No dimentions were provided\n");
+
+    initmap(mapfile, mapwidth, mapheight, &pmainmap);
     initmap(NULL, pmainmap->width, pmainmap->height, &pbuffmap);
 
     for (;;) {
         printmap(pmainmap);
         printf("<ENTER> to continue\n");
-        getinput(NULL, MAXSTR);
+        fgetc(stdin);
+        fflush(stdin);
         step_map(&pmainmap);
     }
     return 0;
@@ -58,7 +97,7 @@ int initmap(FILE *input, int w, int h, struct map **mapoutptr)
         fprintf(stderr, "initmap: Failed to malloc cells");
         exit(1);
     }
-    
+
     for (i = 0; i < (width * height); ++i) {
         if (input == NULL) {
             cells[i].data = 0;
@@ -130,18 +169,9 @@ int coord_to_array(int x, int y, int w, int h)
     return x + y * w;
 }
 
-/* Gets maximum of lim from input into s, dumps stdin */
-void getinput(char s[], int lim) 
+/* Print error and exit program */
+void printerror(char s[])
 {
-    int len;
-
-    fgets(s, lim, stdin);
-    if (s != NULL) {
-        len = strlen(s);
-        if (len == 0)
-            s[0] = '\0';
-        else if (len > 0 && s[len - 1] == '\n')
-            s[len - 1] = '\0';
-    }
-    fflush(stdin);
+    fprintf(stderr, "%s", s);
+    exit(1);
 }

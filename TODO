@@ -6,6 +6,8 @@ Add command line options
    -random soup
          -r [density (default 50)] [width] [height]
 
+Rewrite initmap with pointer to function?? 
+
 Load PBM format (https://en.wikipedia.org/wiki/Netpbm_format)
 Add support for standard CA filetypes.
 Add output to more standard filetype.
