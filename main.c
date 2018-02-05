@@ -100,15 +100,14 @@ int initmap(FILE *input, int w, int h, struct map **mapoutptr)
     }
 
     for (i = 0; i < (width * height); ++i) {
-        if (input == NULL) {
+        if (sflag == 1) {
+            cells[i].data = rand() % 2;
+        } else if (input == NULL) {
             cells[i].data = 0;
         } else {
             while ((c = fgetc(input)) == '\n')
                 ;
-            if (sflag == 1)
-                cells[i].data = rand() % 2;
-            else
-                cells[i].data = c - '0';
+            cells[i].data = c - '0';
         } 
     }
     printf("%d %d\n", width, height);
