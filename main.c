@@ -6,9 +6,11 @@ void printerror(char *s);
 
 struct map *pbuffmap = NULL;
 struct map *pmainmap = NULL;
-                    /*   0  1  2  3  4  5  6  7  8   */ 
+
+                     /*  0  1  2  3  4  5  6  7  8   */ 
 char rulearr[2][9] = { { 0, 0, 0, 1, 0, 0, 0, 0, 0, },     /* Birth */
                        { 0, 0, 1, 1, 0, 0, 0, 0, 0, }, };  /* Surive */
+/* Argument flags */
 int mflag = 0;
 int sflag = 0;
 int dflag = 0;
@@ -35,8 +37,8 @@ int main(int argc, char *argv[])
                 sflag = 1;
                 break;
             case 'd':
-                printf("Argument 'd' with argument %s\n", optarg);
-                sscanf(optarg, "%d:%d", &mapwidth, &mapheight);
+                if (sscanf(optarg, "%d:%d", &mapwidth, &mapheight) == -1)
+                    printerror("Invalid dimentions");
                 dflag = 1;
                 break;
             case 'r':
@@ -46,12 +48,11 @@ int main(int argc, char *argv[])
             case '?':
                 printf("Invalid option!\n");
         }
-                mapfile = fopen("./map", "r");
 
-    //if (mflag == 1 && sflag == 1)
-        //printerror("A random soup cannot be generated when provided a map\n");
-    //if (mflag == 0 && dflag == 0)
-        ////printerror("No dimentions were provided\n");
+    if (mflag == 1 && sflag == 1)
+        printerror("A random soup cannot be generated when provided a map\n");
+    if (mflag == 0 && dflag == 0)
+        printerror("No dimentions were provided\n");
 
     initmap(mapfile, mapwidth, mapheight, &pmainmap);
     initmap(NULL, pmainmap->width, pmainmap->height, &pbuffmap);
@@ -104,8 +105,10 @@ int initmap(FILE *input, int w, int h, struct map **mapoutptr)
         } else {
             while ((c = fgetc(input)) == '\n')
                 ;
-            /* cells[i].data = rand() % 2; */
-            cells[i].data = c - '0';
+            if (sflag == 1)
+                cells[i].data = rand() % 2;
+            else
+                cells[i].data = c - '0';
         } 
     }
     printf("%d %d\n", width, height);
