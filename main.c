@@ -6,6 +6,7 @@ void printerror(char *s);
 
 struct map *pbuffmap = NULL;
 struct map *pmainmap = NULL;
+int randd(int d);
 
                      /*  0  1  2  3  4  5  6  7  8   */ 
 char rulearr[2][9] = { { 0, 0, 0, 1, 0, 0, 0, 0, 0, },     /* Birth */
@@ -15,6 +16,7 @@ int mflag = 0;
 int sflag = 0;
 int dflag = 0;
 int rflag = 0;
+int density = 0;
 
 int main(int argc, char *argv[])
 {
@@ -25,7 +27,7 @@ int main(int argc, char *argv[])
 
     srand(time(NULL));
 
-    while ((c = getopt(argc, argv, "m:s::d:r:")) != -1)
+    while ((c = getopt(argc, argv, "m:s:d:r:")) != -1)
         switch (c) {
             case 'm':
                 mflag = 1;
@@ -33,7 +35,7 @@ int main(int argc, char *argv[])
                     printerror("Failed to open map file\n");
                 break;
             case 's':         /* soup */
-                printf("Argument 's' with argument %s\n", optarg);
+                density = atoi(optarg);
                 sflag = 1;
                 break;
             case 'd':
@@ -101,7 +103,7 @@ int initmap(FILE *input, int w, int h, struct map **mapoutptr)
 
     for (i = 0; i < (width * height); ++i) {
         if (sflag == 1) {
-            cells[i].data = rand() % 2;
+            cells[i].data = randd(density);
         } else if (input == NULL) {
             cells[i].data = 0;
         } else {
@@ -176,4 +178,10 @@ void printerror(char s[])
 {
     fprintf(stderr, "%s", s);
     exit(1);
+}
+
+/* Outputs 1 or 0 using given density */
+int randd(int d)
+{
+    return rand() % 100 > d ? 0 : 1;
 }
