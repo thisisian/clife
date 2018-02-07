@@ -58,6 +58,8 @@ int sum_neighbors(struct map mapin, int arrindex)
 /* 
  * Accepts 2D array index, direction index (CCW starting north), 
  * array dimentions and  outputs index of neighbor 
+ *
+ * Works on toroid surface
  */
 int find_neighbor(int arrindex, int dir, int w, int h)
 {

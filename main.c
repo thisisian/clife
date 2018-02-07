@@ -71,19 +71,27 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-/* Change rulearr to given birth and death rules */
+/* Modify rulearr based on rulestring s */
 int process_rule_str(char s[])
 {
     int i;
+    int x;
     if (s[0] != 'B')
         return -1;
-    for (i = 1; isdigit(s[i]); ++i)
-        rulearr[0][s[i] - '0'] = 1;
+    for (i = 1; isdigit(s[i]); ++i) {
+        x = s[i] - '0';
+        if (x > 8)
+            return -1;
+        rulearr[0][x] = 1;
+    }
     if (s[i++] != '/' || s[i++] != 'D')
         return -1;
-    for (; isdigit(s[i]); ++i)
-        rulearr[1][s[i] - '0'] = 1;
-
+    for (; isdigit(s[i]); ++i) {
+        x = s[i] - '0';
+        if (x > 8)
+            return -1;
+        rulearr[1][x] = 1;
+    }
     return 0;
 }
 
