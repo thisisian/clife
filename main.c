@@ -4,6 +4,7 @@
 int getmapdims(FILE *mapfile, int *pw, int *ph);
 void printerror(char *s);
 
+int process_rule_str(char *);
 struct map *pbuffmap = NULL;
 struct map *pmainmap = NULL;
 int randd(int d);
@@ -40,18 +41,19 @@ int main(int argc, char *argv[])
                 break;
             case 'd':
                 if (sscanf(optarg, "%d:%d", &mapwidth, &mapheight) == -1)
-                    printerror("Invalid dimentions");
+                    printerror("Invalid dimentions\n");
                 dflag = 1;
                 break;
             case 'r':
-                printf("Argument 'r' with argument %s\n", optarg);
+                if (process_rule_str(optarg) == -1)
+                    printerror("Invalid rulestring\n");
                 rflag = 1;
                 break;
             case '?':
                 printf("Invalid option!\n");
         }
 
-    if (mflag == 1 && sflag == 1)
+    if (mflag == 1 && sflag == 1) 
         printerror("A random soup cannot be generated when provided a map\n");
     if (mflag == 0 && dflag == 0)
         printerror("No dimentions were provided\n");
@@ -66,6 +68,22 @@ int main(int argc, char *argv[])
         fflush(stdin);
         step_map(&pmainmap);
     }
+    return 0;
+}
+
+/* Change rulearr to given birth and death rules */
+int process_rule_str(char s[])
+{
+    int i;
+    if (s[0] != 'B')
+        return -1;
+    for (i = 1; isdigit(s[i]); ++i)
+        rulearr[0][s[i] - '0'] = 1;
+    if (s[i++] != '/' || s[i++] != 'D')
+        return -1;
+    for (; isdigit(s[i]); ++i)
+        rulearr[1][s[i] - '0'] = 1;
+
     return 0;
 }
 

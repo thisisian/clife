@@ -1,13 +1,9 @@
 TODO:
 Clean code
-Add command line options
-   -loading map
-        -i [width] [height] [[format]] 
-   -random soup
-         -r [density (default 50)] [width] [height]
+Write some documentation
 
-Rewrite initmap with pointer to function?? 
-
+Better rule string error checking (test it)
+Toroidal edges
 Load PBM format (https://en.wikipedia.org/wiki/Netpbm_format)
 Add support for standard CA filetypes.
 Add output to more standard filetype.
