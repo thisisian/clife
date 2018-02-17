@@ -1,5 +1,6 @@
 #include "header.h"
 #include <unistd.h>
+#include <regex.h>
 
 int getmapdims(FILE *mapfile, int *pw, int *ph);
 void printerror(char *s);
@@ -75,23 +76,18 @@ int main(int argc, char *argv[])
 int process_rule_str(char s[])
 {
     int i;
-    int x;
-    if (s[0] != 'B')
-        return -1;
-    for (i = 1; isdigit(s[i]); ++i) {
-        x = s[i] - '0';
-        if (x > 8)
+    regex_t regexp;
+    regmatch_t match[3];
+
+    regcomp(&regexp, "^b([0-8]+)/s([0-8]+)$", 
+            REG_EXTENDED | REG_ICASE | REG_NEWLINE);
+    if (regexec(&regexp, s, 3, match, 0) != 0)
             return -1;
-        rulearr[0][x] = 1;
-    }
-    if (s[i++] != '/' || s[i++] != 'D')
-        return -1;
-    for (; isdigit(s[i]); ++i) {
-        x = s[i] - '0';
-        if (x > 8)
-            return -1;
-        rulearr[1][x] = 1;
-    }
+    for (i = match[1].rm_so; i < match[1].rm_eo; ++i)
+        rulearr[0][s[i] - '0'] = 1;
+    for (i = match[2].rm_so; i < match[2].rm_eo; ++i)
+        rulearr[1][s[i] - '0'] = 1;
+    regfree(&regexp);
     return 0;
 }
 

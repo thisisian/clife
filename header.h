@@ -6,6 +6,8 @@
 
 #define MAXSTR 1000
 
+#define _POSIX_SOURCE 1
+
 /* Typedefs */
 struct map {
     int width;
