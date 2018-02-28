@@ -3,6 +3,7 @@ This is a command-line program for playing with Conway's game of life and other 
 Use:
 
 `clife -m mapfile [-r rulestring]`
+
 `clife -d width:height [-s [density]] ...`
 
 Description of options:
