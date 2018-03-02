@@ -7,17 +7,18 @@ void printerror(char *s);
 
 int process_rule_str(char *);
 struct map *pmap = NULL;
-int randd(int d);
+int randd(float d);
 
-                     /*  0  1  2  3  4  5  6  7  8   */ 
+         /* # Neighbors: 0  1  2  3  4  5  6  7  8  */ 
 char rulearr[2][9] = { { 0, 0, 0, 1, 0, 0, 0, 0, 0, },     /* Birth */
                        { 0, 0, 1, 1, 0, 0, 0, 0, 0, }, };  /* Surive */
+
 /* Argument flags */
 int mflag = 0;
 int sflag = 0;
 int dflag = 0;
 int rflag = 0;
-int density = 0;
+float density = 50;
 
 int main(int argc, char *argv[])
 {
@@ -36,7 +37,7 @@ int main(int argc, char *argv[])
                     printerror("Failed to open map file\n");
                 break;
             case 's':         /* soup */
-                density = atoi(optarg);
+                density = atof(optarg);
                 sflag = 1;
                 break;
             case 'd':
@@ -51,10 +52,12 @@ int main(int argc, char *argv[])
                 break;
             case '?':
                 printf("Invalid option!\n");
+                exit(1);
         }
 
     if (mflag == 1 && sflag == 1) 
-        printerror("A random soup cannot be generated when provided a map\n");
+        printerror("A random soup cannot be generated"
+                   " in a loaded mapfile.\n");
     if (mflag == 0 && dflag == 0)
         printerror("No dimentions were provided\n");
 
@@ -100,8 +103,6 @@ int initmap(FILE *input, int w, int h)
     int width, height;
     char c;
 
-    struct cell *cells = NULL;
-
     if (input != NULL) { 
         getmapdims(input, &width, &height);
         rewind(input);
@@ -139,7 +140,6 @@ int initmap(FILE *input, int w, int h)
             pmap->cell_array[i].data = c - '0';
         } 
     }
-    printf("%d %d\n", width, height);
 
     return 1;
 }
@@ -159,7 +159,6 @@ int getmapdims(FILE *input, int *pw, int *ph)
     }
     *pw = ncols;
     *ph = nrows;
-    printf("w: %d, h: %d\n", *pw, *ph);
     return 0;
 }
 
@@ -209,7 +208,7 @@ void printerror(char s[])
 }
 
 /* Outputs 1 or 0 using given density */
-int randd(int d)
+int randd(float d)
 {
-    return rand() % 100 > d ? 0 : 1;
+    return (float)rand()/RAND_MAX > d ? 0 : 1;
 }

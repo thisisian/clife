@@ -1,9 +1,0 @@
-TODO:
-Clean code
-Write some documentation
-Change everything to xy coordinate instead of array indices
-Toroidal edges
-Better rule string error checking (test it)
-Load PBM format (https://en.wikipedia.org/wiki/Netpbm_format)
-Add support for standard CA filetypes.
-Add output to more standard filetype.

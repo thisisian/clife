@@ -1,24 +1,31 @@
-This is an implementaiton of Conway's game of life.
+This is a command-line program for playing with Conway's game of life and other life-like cellular automata.
 
 Use:
 
-clife 
+`clife -m mapfile [-r rulestring]`
 
-options:
+`clife -d width:height [-s [density]] ...`
 
--s [density] 
+Description of options:
 
-Generates a random soup with a given density.
+`-m mapfile`
 
--d [width:height]
-
-Gives map width and height for map if it's not being loaded.
-
--m [mapfile]
+Load mapfile, is a 2d bitfield with newlines separating rows
 
 Mapfile is a 2d bitfield with newlines separating rows
 
--r [rulestring]
+`-d width:height`
+
+Loads a map with given dimentions. Map will be empty unless `-s` option is supplied.
+
+`-s density`
+Generates a random initial pattern with a given density.
+
+
+`-r [rulestring]`
 
 Specify a rulestring is B/S format. Defaults to B3/S23 (Conway's Game of Life)
 
+Example:
+`clife -d 50:50 -s .75 -r B3/S23`
+Loads a 50x50 map with a random initialization of density 75% using Conway's ruleset.
