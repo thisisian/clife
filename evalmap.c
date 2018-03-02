@@ -1,32 +1,30 @@
 #include "header.h"
 
-extern struct map *pbuffmap;
-extern struct map *pmainmap;
+extern struct map *pmap;
 extern char rulearr[2][9];
 
 /* Moves mapinputptr to next step of the map */
-int step_map(struct map **pmap) 
+int step_map() 
 { 
     int i; 
+    struct cell *temp;
 
-    struct map *temp;
-    for (i = 0; i < (*pmap)->width * (*pmap)->height; ++i) {
-        (pbuffmap)->cell_array[i].data = evaluate(*pmap, i, rulearr);
+    for (i = 0; i < pmap->width * pmap->height; ++i) {
+        pmap->buffer[i].data = evaluate(i, rulearr);
     }
-    temp = *pmap;
-    *pmap = pbuffmap;
-    pbuffmap = temp;
-
+    temp = pmap->cell_array;
+    pmap->cell_array = pmap->buffer;
+    pmap->buffer = temp;
     return 0;
 }
 
 /* Evaluates a cell and returns a value or -1 if failure */
-int evaluate(struct map *mapptr, int arrindex, char rulearr[2][9])
+int evaluate(int arrindex, char rulearr[2][9])
 {
-    int data = mapptr->cell_array[arrindex].data;
-    int sum = sum_neighbors(*mapptr, arrindex);
+    int data = pmap->cell_array[arrindex].data;
+    int sum = sum_neighbors(arrindex);
 
-    if (arrindex >= mapptr->width * mapptr->height) {
+    if (arrindex >= pmap->width * pmap->height) {
         fprintf(stderr, "evaluate: arrindex out of bounds\n");
         return -1;
     }
@@ -36,21 +34,21 @@ int evaluate(struct map *mapptr, int arrindex, char rulearr[2][9])
     return 0;
 }
 /* Sum neighbors at arrindex, return -1 if failure */
-int sum_neighbors(struct map mapin, int arrindex)
+int sum_neighbors(int arrindex)
 {
     int i;
     int temp;
     int sum = 0;
     
-    if (arrindex >= mapin.width * mapin.height) {
+    if (arrindex >= pmap->width * pmap->height) {
         fprintf(stderr, "sum_neighbors: array index out of bounds\n");
         return -1;
     }
 
     for (i = 1; i <= 8; ++i) {
-        temp = find_neighbor(arrindex, i, mapin.width, mapin.height);
+        temp = find_neighbor(arrindex, i);
         if (temp != -1)
-            sum += mapin.cell_array[temp].data;
+            sum += pmap->cell_array[temp].data;
     }
     return sum;
 }
@@ -58,15 +56,16 @@ int sum_neighbors(struct map mapin, int arrindex)
 /* 
  * Accepts 2D array index, direction index (CCW starting north), 
  * array dimentions and  outputs index of neighbor 
- *
- * Works on toroid surface
  */
-int find_neighbor(int arrindex, int dir, int w, int h)
+int find_neighbor(int arrindex, int dir)
 {
+
+    int w = pmap->width;
+    int h = pmap->height;
     int north = arrindex + w;
     int south = arrindex - w;
-    int xpos = getcol(arrindex, w, h);
-    int ypos = getrow(arrindex, w, h);
+    int xpos = getcol(arrindex);
+    int ypos = getrow(arrindex);
     int result = -1;
 
     if (arrindex >= w * h)

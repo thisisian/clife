@@ -13,6 +13,7 @@ struct map {
     int width;
     int height;
     struct cell *cell_array;
+    struct cell *buffer;
 };
 
 struct cell {
@@ -22,14 +23,14 @@ struct cell {
 /* Function Prototypes */
 /* main.c */
 void getinput(char *s, int lim);
-void printmap(struct map *mapptr);
-int initmap(FILE *input, int w, int h, struct map **mapoutptr);
-int coord_to_array(int x, int y, int w, int h);
-int find_neighbor(int n, int i, int w, int h);
-int getcol(int n, int w, int h);
-int getrow(int n, int w, int h);
+void printmap();
+int initmap(FILE *input, int w, int h);
+int getcol(int n);
+int getrow(int n);
+int coord_to_array(int x, int y);
 
 /* evalmap.c */
-int step_map(struct map **pmap);
-int evaluate(struct map *mapptr, int arrindex, char rulearr[2][9]);
-int sum_neighbors(struct map m, int n);
+int step_map();
+int evaluate(int arrindex, char rulearr[2][9]);
+int sum_neighbors(int n);
+int find_neighbor(int n, int i);

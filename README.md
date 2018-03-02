@@ -20,5 +20,5 @@ Mapfile is a 2d bitfield with newlines separating rows
 
 -r [rulestring]
 
-Specify a rulestring is B/S format. Defaults to B3/D23 (Conway's Game of Life)
+Specify a rulestring is B/S format. Defaults to B3/S23 (Conway's Game of Life)
 

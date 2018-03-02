@@ -6,8 +6,7 @@ int getmapdims(FILE *mapfile, int *pw, int *ph);
 void printerror(char *s);
 
 int process_rule_str(char *);
-struct map *pbuffmap = NULL;
-struct map *pmainmap = NULL;
+struct map *pmap = NULL;
 int randd(int d);
 
                      /*  0  1  2  3  4  5  6  7  8   */ 
@@ -59,15 +58,14 @@ int main(int argc, char *argv[])
     if (mflag == 0 && dflag == 0)
         printerror("No dimentions were provided\n");
 
-    initmap(mapfile, mapwidth, mapheight, &pmainmap);
-    initmap(NULL, pmainmap->width, pmainmap->height, &pbuffmap);
+    initmap(mapfile, mapwidth, mapheight);
 
     for (;;) {
-        printmap(pmainmap);
+        printmap();
         printf("<ENTER> to continue\n");
         fgetc(stdin);
         fflush(stdin);
-        step_map(&pmainmap);
+        step_map();
     }
     return 0;
 }
@@ -96,7 +94,7 @@ int process_rule_str(char s[])
  * If input is NULL, map dimensions will be w and h, otherwise w and h 
  * are ignored
  */
-int initmap(FILE *input, int w, int h, struct map **mapoutptr)
+int initmap(FILE *input, int w, int h)
 {
     int i;
     int width, height;
@@ -112,33 +110,37 @@ int initmap(FILE *input, int w, int h, struct map **mapoutptr)
         height = h;
     }
     
-    *mapoutptr = malloc(sizeof (struct map));
-    if (mapoutptr == NULL) {
+    pmap = malloc(sizeof (struct map));
+    if (pmap == NULL) {
         fprintf(stderr, "intimap: Failed to malloc map");
         exit(1);
     }
-    cells = malloc(sizeof (struct cell) * width * height);
-    if (cells == NULL) {
+    pmap->cell_array = malloc(sizeof (struct cell) * width * height);
+    if (pmap->cell_array == NULL) {
         fprintf(stderr, "initmap: Failed to malloc cells");
         exit(1);
     }
+    pmap->buffer = malloc(sizeof (struct cell) * width * height);
+    if (pmap->buffer == NULL) {
+        fprintf(stderr, "initmap: Failed to malloc cells");
+        exit(1);
+    }
+    pmap->width = width;
+    pmap->height = height;
 
     for (i = 0; i < (width * height); ++i) {
         if (sflag == 1) {
-            cells[i].data = randd(density);
+            pmap->cell_array[i].data = randd(density);
         } else if (input == NULL) {
-            cells[i].data = 0;
+            pmap->cell_array[i].data = 0;
         } else {
             while ((c = fgetc(input)) == '\n')
                 ;
-            cells[i].data = c - '0';
+            pmap->cell_array[i].data = c - '0';
         } 
     }
     printf("%d %d\n", width, height);
 
-    (*mapoutptr)->width = width;
-    (*mapoutptr)->height = height;
-    (*mapoutptr)->cell_array = cells;
     return 1;
 }
 
@@ -162,12 +164,12 @@ int getmapdims(FILE *input, int *pw, int *ph)
 }
 
 /* Print map */
-void printmap(struct map *mapptr)
+void printmap()
 {
     int i;
-    int w = mapptr->width;
-for (i = 0; i < mapptr->width * mapptr->height; ++i) {
-        if (mapptr->cell_array[i].data)
+    int w = pmap->width;
+for (i = 0; i < pmap->width * pmap->height; ++i) {
+        if (pmap->cell_array[i].data)
             printf("*");
         else
             printf(" ");
@@ -176,19 +178,23 @@ for (i = 0; i < mapptr->width * mapptr->height; ++i) {
     }
 }
 
-int getcol(int arrindex, int w, int h) 
+int getcol(int arrindex) 
 {
+    int w = pmap->width;
     return arrindex % w;
 }
 
-int getrow(int arrindex, int w, int h) 
+int getrow(int arrindex) 
 {
+    int w = pmap->width;
     return arrindex / w;
 }
 
 /* Takes 2d coordinates and dimentions and outputs appropriate array index */
-int coord_to_array(int x, int y, int w, int h)
+int coord_to_array(int x, int y)
 {
+    int w = pmap->width;
+    int h = pmap->height;
     if (x >= w || y >= h) {
         fprintf(stderr, "coord_to_array: Given coordinate outside range\n");
     }
