@@ -2,30 +2,36 @@
 #include <unistd.h>
 #include <regex.h>
 
+/* Function prototypes */
 int getmapdims(FILE *mapfile, int *pw, int *ph);
 void printerror(char *s);
-
 int process_rule_str(char *);
-struct map *pmap = NULL;
 int randd(float d);
 
+/* rulearr defines number of neighbors for a cell to give birth or survive */
          /* # Neighbors: 0  1  2  3  4  5  6  7  8  */ 
 char rulearr[2][9] = { { 0, 0, 0, 1, 0, 0, 0, 0, 0, },     /* Birth */
                        { 0, 0, 1, 1, 0, 0, 0, 0, 0, }, };  /* Surive */
+
+/* Global variables */
+float density = 50;
+
+/* Map-related variables */
+int maprows, mapcols = 0;
+int **mainmap = NULL;
+int **buff = NULL;
 
 /* Argument flags */
 int mflag = 0;
 int sflag = 0;
 int dflag = 0;
 int rflag = 0;
-float density = 50;
+
 
 int main(int argc, char *argv[])
 {
-    char c;
+    char c;     // temp variable
     FILE *mapfile = NULL;
-    int mapwidth, mapheight;
-    mapwidth = mapheight = 0;
 
     srand(time(NULL));
 
@@ -41,7 +47,7 @@ int main(int argc, char *argv[])
                 sflag = 1;
                 break;
             case 'd':
-                if (sscanf(optarg, "%d:%d", &mapwidth, &mapheight) == -1)
+                if (sscanf(optarg, "%d:%d", &mapcols, &maprows) == -1)
                     printerror("Invalid dimentions\n");
                 dflag = 1;
                 break;
@@ -61,14 +67,14 @@ int main(int argc, char *argv[])
     if (mflag == 0 && dflag == 0)
         printerror("No dimentions were provided\n");
 
-    initmap(mapfile, mapwidth, mapheight);
+    initmap(mapfile, mapcols, maprows);
 
     for (;;) {
         printmap();
         printf("<ENTER> to continue\n");
         fgetc(stdin);
         fflush(stdin);
-        step_map();
+        //step_map();
     }
     return 0;
 }
@@ -92,112 +98,89 @@ int process_rule_str(char s[])
     return 0;
 }
 
+int **make_2d_int_array(unsigned int nrows, unsigned int ncols) 
+{
+    int **array;
+    array = malloc(sizeof(int*) * nrows + sizeof(int) * nrows * ncols);
+    if (array == NULL)
+        printf("made_2d_array: failed to malloc array\n");
+    for (size_t i = 0; i < nrows; ++i) {
+	   array[i] = (int*) (array + nrows + i * ncols);
+    }
+    return array;
+}
+
 /*
- * Load a map into mapoutptr. Returns 1 on success. 
+ * initmap initalizes  a map into mainmap and loads in cells
  * If input is NULL, map dimensions will be w and h, otherwise w and h 
  * are ignored
  */
 int initmap(FILE *input, int w, int h)
 {
-    int i;
-    int width, height;
+    int i, j;
     char c;
 
     if (input != NULL) { 
-        getmapdims(input, &width, &height);
+        getmapdims(input, &mapcols, &maprows);
         rewind(input);
-    } else {
-        width = w;
-        height = h;
-    }
+    } 
     
-    pmap = malloc(sizeof (struct map));
-    if (pmap == NULL) {
-        fprintf(stderr, "intimap: Failed to malloc map");
-        exit(1);
-    }
-    pmap->cell_array = malloc(sizeof (struct cell) * width * height);
-    if (pmap->cell_array == NULL) {
-        fprintf(stderr, "initmap: Failed to malloc cells");
-        exit(1);
-    }
-    pmap->buffer = malloc(sizeof (struct cell) * width * height);
-    if (pmap->buffer == NULL) {
-        fprintf(stderr, "initmap: Failed to malloc cells");
-        exit(1);
-    }
-    pmap->width = width;
-    pmap->height = height;
+    /* Create map */
+    buff = make_2d_int_array(maprows,mapcols);
+    mainmap = make_2d_int_array(maprows,mapcols);
 
-    for (i = 0; i < (width * height); ++i) {
-        if (sflag == 1) {
-            pmap->cell_array[i].data = randd(density);
-        } else if (input == NULL) {
-            pmap->cell_array[i].data = 0;
-        } else {
-            while ((c = fgetc(input)) == '\n')
-                ;
-            pmap->cell_array[i].data = c - '0';
-        } 
+    /* Fill cells */
+    for (i = 0; i < maprows; ++i) {
+        for (j = 0; j < mapcols; ++j) {
+            if (sflag == 1) {
+                mainmap[i][j] = randd(density);
+            } else if (input == NULL) {
+                mainmap[i][j] =  0;
+            } else {
+                while ((c = fgetc(input)) == '\n')
+                    ;
+                mainmap[i][j] = c - '0';
+            } 
+        }
     }
 
     return 1;
 }
 
-/* writes map dimentions into w and h */
+/* Writes map dimentions into w and h */
 int getmapdims(FILE *input, int *pw, int *ph)
 {
-    int ncols, nrows;
+    int mapcols, maprows;
     char c;
 
-    ncols = nrows = 0;
+    mapcols = maprows = 0;
     while ((c = fgetc(input)) != EOF) {
         if (c == '\n')
-            ++nrows;
-        if (nrows == 0)
-            ++ncols;
+            ++maprows;
+        if (maprows == 0)
+            ++mapcols;
     }
-    *pw = ncols;
-    *ph = nrows;
+    *pw = mapcols;
+    *ph = maprows;
     return 0;
 }
 
 /* Print map */
 void printmap()
 {
-    int i;
-    int w = pmap->width;
-for (i = 0; i < pmap->width * pmap->height; ++i) {
-        if (pmap->cell_array[i].data)
-            printf("*");
-        else
-            printf(" ");
-        if ((i + 1) % w == 0 && i != 1)
-            printf("\n");
+    int i, j;
+    for (i = 0; i < maprows; ++i) {
+        for (j = 0; j < mapcols; ++j) {
+            if (mainmap[i][j] == 1)
+                printf("%c", 'o');
+            else if (mainmap[i][j] == 0) {
+                printf("%c", '.');
+            }
+            else
+                printf("#");
+        }
+        printf("\n");
     }
-}
-
-int getcol(int arrindex) 
-{
-    int w = pmap->width;
-    return arrindex % w;
-}
-
-int getrow(int arrindex) 
-{
-    int w = pmap->width;
-    return arrindex / w;
-}
-
-/* Takes 2d coordinates and dimentions and outputs appropriate array index */
-int coord_to_array(int x, int y)
-{
-    int w = pmap->width;
-    int h = pmap->height;
-    if (x >= w || y >= h) {
-        fprintf(stderr, "coord_to_array: Given coordinate outside range\n");
-    }
-    return x + y * w;
 }
 
 /* Print error and exit program */

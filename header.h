@@ -25,12 +25,9 @@ struct cell {
 void getinput(char *s, int lim);
 void printmap();
 int initmap(FILE *input, int w, int h);
-int getcol(int n);
-int getrow(int n);
-int coord_to_array(int x, int y);
 
 /* evalmap.c */
 int step_map();
-int evaluate(int arrindex, char rulearr[2][9]);
-int sum_neighbors(int n);
+int evaluate(int i, int j, char rulearr[2][9]);
+int summoore(int i, int j);
 int find_neighbor(int n, int i);

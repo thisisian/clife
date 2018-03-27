@@ -1,113 +1,61 @@
 #include "header.h"
+#include "assert.h"
 
-extern struct map *pmap;
+/* External variables */
 extern char rulearr[2][9];
+extern int maprows;
+extern int mapcols;
+extern int **buff;
+extern int **mainmap;
 
-/* Moves mapinputptr to next step of the map */
+/* Function Prototypes */
+int getcell(int r, int c);
+
+/* Function implementations */
+/* step_map sets mainmap to next iteration */
 int step_map() 
 { 
-    int i; 
-    struct cell *temp;
+    printf("%d , %d\n", maprows, mapcols);
+    int i, j; 
+    int **temp;
 
-    for (i = 0; i < pmap->width * pmap->height; ++i) {
-        pmap->buffer[i].data = evaluate(i, rulearr);
+    for (i = 0; i < maprows; ++i) {
+        for (j = 0; j < mapcols; ++j) {
+            buff[i][j] = evaluate(i, j, rulearr);
+        }
     }
-    temp = pmap->cell_array;
-    pmap->cell_array = pmap->buffer;
-    pmap->buffer = temp;
+    temp = buff;
+    buff = mainmap;
+    mainmap = temp;
     return 0;
 }
 
 /* Evaluates a cell and returns a value or -1 if failure */
-int evaluate(int arrindex, char rulearr[2][9])
+int evaluate(int r, int c, char rulearr[2][9])
 {
-    int data = pmap->cell_array[arrindex].data;
-    int sum = sum_neighbors(arrindex);
-
-    if (arrindex >= pmap->width * pmap->height) {
-        fprintf(stderr, "evaluate: arrindex out of bounds\n");
-        return -1;
-    }
-    if ((data == 0 && rulearr[0][sum] == 1) || 
-        (data == 1 && rulearr[1][sum] == 1))
-        return 1;
-    return 0;
+    int data = mainmap[r][c];
+    int sum = summoore(r, c);
+    return ((data == 0 && rulearr[0][sum] == 1) || 
+            (data == 1 && rulearr[1][sum] == 1));
 }
-/* Sum neighbors at arrindex, return -1 if failure */
-int sum_neighbors(int arrindex)
+/* summoore finds the sum of neighbors at row r column c */
+int summoore(int r, int c)
 {
     int i;
-    int temp;
     int sum = 0;
     
-    if (arrindex >= pmap->width * pmap->height) {
-        fprintf(stderr, "sum_neighbors: array index out of bounds\n");
-        return -1;
+    sum += getcell(r-1, c) + getcell(r+1, c);
+    for (i = 0; i < 3; ++i) {
+        sum += getcell(r-1+i, c+1);
+        sum += getcell(r-1+i, c-1);
     }
-
-    for (i = 1; i <= 8; ++i) {
-        temp = find_neighbor(arrindex, i);
-        if (temp != -1)
-            sum += pmap->cell_array[temp].data;
-    }
+    assert(sum <= 8);
     return sum;
 }
 
-/* 
- * Accepts 2D array index, direction index (CCW starting north), 
- * array dimentions and  outputs index of neighbor 
- */
-int find_neighbor(int arrindex, int dir)
-{
-
-    int w = pmap->width;
-    int h = pmap->height;
-    int north = arrindex + w;
-    int south = arrindex - w;
-    int xpos = getcol(arrindex);
-    int ypos = getrow(arrindex);
-    int result = -1;
-
-    if (arrindex >= w * h)
-        fprintf(stderr, "find_neighbor: Array outside bounds\n");
-    if (dir < 1 || dir > 8)
-        fprintf(stderr, "find_neighbor: Invalid direction int\n");
-
-    switch(dir) {
-        case 1:
-            if (ypos < h - 1)
-                result = north;
-            break;
-        case 2:
-            if (ypos < h - 1 && xpos < w - 1)
-                result = north + 1;
-            break;
-        case 3:
-            if (xpos < w - 1)
-                result = arrindex + 1;
-            break;
-        case 4:
-            if (ypos > 0 && xpos < w - 1)
-                result = south + 1; 
-            break;
-        case 5: 
-            if (ypos > 0) 
-                result = south; 
-            break;
-        case 6:
-            if (ypos > 0 && xpos > 0)
-                result = south - 1;
-            break;
-        case 7:
-            if (xpos > 0)
-                result = arrindex - 1;
-            break;
-        case 8:
-            if (ypos < h - 1 && xpos > 0)
-                result = north - 1;
-            break;
-        default:
-            fprintf(stderr, "find_neighbor: case fell through");
-    }
-    return result;
+/* getc returns the value at cell at row r, column c. Respects toroid plane */
+int getcell(int r, int c) {
+    int w = mapcols;
+    int h = maprows;
+    return mainmap[(r % h + h) % h][(c % w + w) % w];
 }
