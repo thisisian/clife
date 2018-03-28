@@ -8,26 +8,15 @@
 
 #define _POSIX_SOURCE 1
 
-/* Typedefs */
-struct map {
-    int width;
-    int height;
-    struct cell *cell_array;
-    struct cell *buffer;
-};
-
-struct cell {
-    int data;
-};
-
 /* Function Prototypes */
 /* main.c */
-void getinput(char *s, int lim);
-void printmap();
-int initmap(FILE *input, int w, int h);
+void getInput(char *, int);
+void printMap();
+int initMap(FILE *, int, int);
+void printError(char *);
 
 /* evalmap.c */
-int step_map();
-int evaluate(int i, int j, char rulearr[2][9]);
-int summoore(int i, int j);
-int find_neighbor(int n, int i);
+int stepMap();
+int evaluate(int, int, char [2][9]);
+int sumMoore(int, int);
+int findNeighbor(int, int);

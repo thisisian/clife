@@ -3,14 +3,14 @@
 #include <regex.h>
 
 /* Function prototypes */
-int getmapdims(FILE *mapfile, int *pw, int *ph);
-void printerror(char *s);
-int process_rule_str(char *);
-int randd(float d);
+int getMapDims(FILE *, int *, int *);
+int processRuleStr(char *);
+int randBin(float);
+int **make2DArr(unsigned int, unsigned int);
 
-/* rulearr defines number of neighbors for a cell to give birth or survive */
+/* ruleset defines number of neighbors for a cell to give birth or survive */
          /* # Neighbors: 0  1  2  3  4  5  6  7  8  */ 
-char rulearr[2][9] = { { 0, 0, 0, 1, 0, 0, 0, 0, 0, },     /* Birth */
+char ruleset[2][9] = { { 0, 0, 0, 1, 0, 0, 0, 0, 0, },     /* Birth */
                        { 0, 0, 1, 1, 0, 0, 0, 0, 0, }, };  /* Surive */
 
 /* Global variables */
@@ -19,14 +19,13 @@ float density = 50;
 /* Map-related variables */
 int maprows, mapcols = 0;
 int **mainmap = NULL;
-int **buff = NULL;
+int **buffmap = NULL;
 
-/* Argument flags */
+/* Command-line argument flags */
 int mflag = 0;
 int sflag = 0;
 int dflag = 0;
 int rflag = 0;
-
 
 int main(int argc, char *argv[])
 {
@@ -40,7 +39,7 @@ int main(int argc, char *argv[])
             case 'm':
                 mflag = 1;
                 if ((mapfile = fopen(optarg, "r")) == NULL)
-                    printerror("Failed to open map file\n");
+                    printError("Failed to open map file\n");
                 break;
             case 's':         /* soup */
                 density = atof(optarg);
@@ -48,12 +47,12 @@ int main(int argc, char *argv[])
                 break;
             case 'd':
                 if (sscanf(optarg, "%d:%d", &mapcols, &maprows) == -1)
-                    printerror("Invalid dimentions\n");
+                    printError("Invalid dimentions\n");
                 dflag = 1;
                 break;
             case 'r':
-                if (process_rule_str(optarg) == -1)
-                    printerror("Invalid rulestring\n");
+                if (processRuleStr(optarg) == -1)
+                    printError("Invalid rulestring\n");
                 rflag = 1;
                 break;
             case '?':
@@ -62,25 +61,25 @@ int main(int argc, char *argv[])
         }
 
     if (mflag == 1 && sflag == 1) 
-        printerror("A random soup cannot be generated"
+        printError("A random soup cannot be generated"
                    " in a loaded mapfile.\n");
     if (mflag == 0 && dflag == 0)
-        printerror("No dimentions were provided\n");
+        printError("No dimentions were provided\n");
 
-    initmap(mapfile, mapcols, maprows);
+    initMap(mapfile, mapcols, maprows);
 
     for (;;) {
-        printmap();
+        printMap();
         printf("<ENTER> to continue\n");
         fgetc(stdin);
         fflush(stdin);
-        //step_map();
+        stepMap();
     }
     return 0;
 }
 
-/* Modify rulearr based on rulestring s */
-int process_rule_str(char s[])
+/* processRuleStr modifies ruleset based on rulestring s */
+int processRuleStr(char s[])
 {
     int i;
     regex_t regexp;
@@ -91,49 +90,38 @@ int process_rule_str(char s[])
     if (regexec(&regexp, s, 3, match, 0) != 0)
             return -1;
     for (i = match[1].rm_so; i < match[1].rm_eo; ++i)
-        rulearr[0][s[i] - '0'] = 1;
+        ruleset[0][s[i] - '0'] = 1;
     for (i = match[2].rm_so; i < match[2].rm_eo; ++i)
-        rulearr[1][s[i] - '0'] = 1;
+        ruleset[1][s[i] - '0'] = 1;
     regfree(&regexp);
     return 0;
 }
 
-int **make_2d_int_array(unsigned int nrows, unsigned int ncols) 
-{
-    int **array;
-    array = malloc(sizeof(int*) * nrows + sizeof(int) * nrows * ncols);
-    if (array == NULL)
-        printf("made_2d_array: failed to malloc array\n");
-    for (size_t i = 0; i < nrows; ++i) {
-	   array[i] = (int*) (array + nrows + i * ncols);
-    }
-    return array;
-}
 
 /*
- * initmap initalizes  a map into mainmap and loads in cells
+ * initMap initalizes  a map into mainmap and loads in cells
  * If input is NULL, map dimensions will be w and h, otherwise w and h 
  * are ignored
  */
-int initmap(FILE *input, int w, int h)
+int initMap(FILE *input, int w, int h)
 {
     int i, j;
     char c;
 
     if (input != NULL) { 
-        getmapdims(input, &mapcols, &maprows);
+        getMapDims(input, &mapcols, &maprows);
         rewind(input);
     } 
     
     /* Create map */
-    buff = make_2d_int_array(maprows,mapcols);
-    mainmap = make_2d_int_array(maprows,mapcols);
+    buffmap = make2DArr(maprows,mapcols);
+    mainmap = make2DArr(maprows,mapcols);
 
     /* Fill cells */
     for (i = 0; i < maprows; ++i) {
         for (j = 0; j < mapcols; ++j) {
             if (sflag == 1) {
-                mainmap[i][j] = randd(density);
+                mainmap[i][j] = randBin(density);
             } else if (input == NULL) {
                 mainmap[i][j] =  0;
             } else {
@@ -147,8 +135,8 @@ int initmap(FILE *input, int w, int h)
     return 1;
 }
 
-/* Writes map dimentions into w and h */
-int getmapdims(FILE *input, int *pw, int *ph)
+/* getMapDims writes input's  dimentions into w and h */
+int getMapDims(FILE *input, int *pw, int *ph)
 {
     int mapcols, maprows;
     char c;
@@ -165,8 +153,8 @@ int getmapdims(FILE *input, int *pw, int *ph)
     return 0;
 }
 
-/* Print map */
-void printmap()
+/* printMap prints a map to stdout */
+void printMap()
 {
     int i, j;
     for (i = 0; i < maprows; ++i) {
@@ -183,15 +171,26 @@ void printmap()
     }
 }
 
-/* Print error and exit program */
-void printerror(char s[])
+/* make2DArr returns a dynamically allocated 2D int array */
+int **make2DArr(unsigned int nrows, unsigned int ncols) 
+{
+    int **array = malloc(nrows * sizeof (int*) + sizeof (int) * nrows * ncols);
+    if (array == NULL)
+        printf("made2DArr: failed to malloc array\n");
+    for(size_t i = 0; i < nrows; i++)
+      array[i] = (int *) (array + nrows) + i * ncols;
+    return array;
+}
+
+/* printError prints s and exits program */
+void printError(char s[])
 {
     fprintf(stderr, "%s", s);
     exit(1);
 }
 
-/* Outputs 1 or 0 using given density */
-int randd(float d)
+/* randBin has a p probabilty of returning 1 and (1-p) of returning 0  */
+int randBin(float p)
 {
-    return (float)rand()/RAND_MAX > d ? 0 : 1;
+    return (float)rand()/RAND_MAX > p ? 0 : 1;
 }
